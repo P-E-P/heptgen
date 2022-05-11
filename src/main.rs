@@ -1,6 +1,8 @@
 use clap::{arg, command, ArgMatches};
 use std::path::Path;
 
+mod parser;
+
 const HEPTAGON_INTERFACE_EXTENSION: &str = "epi";
 
 fn main() {
@@ -17,6 +19,7 @@ fn main() {
     if !validate_file_extension(filepath, &matches) {
         panic!("Invalid file extension");
     }
+
 }
 
 fn validate_file_extension(filename: &Path, matches: &ArgMatches) -> bool {
