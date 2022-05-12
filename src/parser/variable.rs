@@ -1,12 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_while},
-    character::complete::{char, digit0, space0},
-    character::is_alphanumeric,
-    combinator::opt,
-    error::{context, VerboseError},
-    sequence::{delimited, separated_pair, tuple},
-    IResult,
+    bytes::complete::{tag, take_while},
+    character::complete::{digit0, space0},
+    error::context,
+    sequence::{separated_pair, tuple},
 };
 
 use super::Res;
@@ -70,7 +67,7 @@ pub fn variable(input: &str) -> Res<&str, Variable> {
 
 fn variable_name(input: &str) -> Res<&str, &str> {
     context("variable name", take_while(valid_variable_char))(input)
-        .map(|(next_input, res)| (next_input, res.into()))
+        .map(|(next_input, res)| (next_input, res))
 }
 
 fn valid_variable_char(chr: char) -> bool {
@@ -84,7 +81,7 @@ fn primitive(input: &str) -> Res<&str, Type> {
 
 fn primitive_with_length(input: &str) -> Res<&str, (Type, &str)> {
     context("primitive with length", primitive)(input)
-        .map(|(next_input, res)| (next_input, (res.into(), "0")))
+        .map(|(next_input, res)| (next_input, (res, "0")))
 }
 
 fn variable_type(input: &str) -> Res<&str, MetaType> {

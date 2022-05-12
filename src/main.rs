@@ -31,11 +31,7 @@ fn main() {
         if line.len() > 1 {
             match parser::function_declaration(&line) {
                 Ok((_, dec)) => declarations.push(dec),
-                Err(why) => eprintln!(
-                    "Error while parsing line\n{}\n Error is: {:?}",
-                    &line,
-                    why
-                ),
+                Err(why) => eprintln!("Error while parsing line\n{}\n Error is: {:?}", &line, why),
             }
         }
     }

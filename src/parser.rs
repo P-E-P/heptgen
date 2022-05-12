@@ -1,12 +1,10 @@
 use nom::{
-    branch::alt,
-    bytes::complete::{is_not, tag, take_while},
-    character::complete::{char, digit0, space0, space1},
-    character::is_alphanumeric,
+    bytes::complete::{tag, take_while},
+    character::complete::{char, space0, space1},
     combinator::opt,
     error::{context, VerboseError},
     multi::separated_list0,
-    sequence::{delimited, separated_pair, tuple},
+    sequence::tuple,
     IResult,
 };
 
@@ -43,7 +41,7 @@ fn variable_list(input: &str) -> Res<&str, Vec<Variable>> {
         "variable list",
         separated_list0(variable_separator, variable),
     )(input)
-    .map(|(next_input, res)| (next_input, res.into()))
+    .map(|(next_input, res)| (next_input, res))
 }
 
 pub fn function_declaration(input: &str) -> Res<&str, Declaration> {
@@ -75,7 +73,7 @@ pub fn function_declaration(input: &str) -> Res<&str, Declaration> {
 
 fn function_name(input: &str) -> Res<&str, &str> {
     context("function name", take_while(valid_function_char))(input)
-        .map(|(next_input, res)| (next_input, res.into()))
+        .map(|(next_input, res)| (next_input, res))
 }
 
 fn valid_function_char(chr: char) -> bool {
