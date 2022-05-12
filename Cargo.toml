@@ -2,8 +2,10 @@
 name = "heptgen"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "GPL-3.0"
+repository = "https://github.com/P-E-P/heptgen"
+description = "Generate c interface files from heptagon interface files."
+readme = "README.md"
 
 [dependencies]
 clap = { version = "3.1.17", features = ["cargo"] }
