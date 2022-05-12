@@ -2,8 +2,36 @@ use clap::{arg, command, ArgMatches};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use parser::Declaration;
 
 mod parser;
+
+const TYPE_TEMPLATE : &str = r#"
+#ifndef {unit_name}_TYPES_H
+#define {unit_name}_TYPES_H
+
+{type_definition}
+
+#endif /* {unit_name}_TYPES_H */
+"#;
+
+const HEADER_TEMPLATE : &str = r#"
+#ifndef {unit_name}_H
+#define {unit_name}_H
+
+{type_inclusion}
+
+{function_declarations}
+
+#endif /* ! {unit_name}_H */
+"#;
+
+const C_TEMPLATE : &str = r#"
+#include "{header_file}.h"
+
+{function_definitions}
+
+"#;
 
 const HEPTAGON_INTERFACE_EXTENSION: &str = "epi";
 
@@ -23,20 +51,30 @@ fn main() {
     }
 
     let file = File::open(filepath).expect("Cannot open file");
-    let reader = BufReader::new(file);
+    let declarations = parse_declarations(file);
 
-    let mut declarations = vec![];
+    println!("{:#?}", declarations);
+
+    let unit_name = filepath.file_name().expect("Invalid file").to_string_lossy();
+
+    for dec in declarations {}
+
+}
+
+fn parse_declarations(file: File) -> Vec<Declaration> {
+    let reader = BufReader::new(file);
+    let mut result = vec![];
     for line in reader.lines() {
         let line = line.expect("Cannot read line");
         if line.len() > 1 {
             match parser::function_declaration(&line) {
-                Ok((_, dec)) => declarations.push(dec),
+                Ok((_, dec)) => result.push(dec),
                 Err(why) => eprintln!("Error while parsing line\n{}\n Error is: {:?}", &line, why),
             }
         }
     }
 
-    println!("{:#?}", declarations);
+    result
 }
 
 fn validate_file_extension(filename: &Path, matches: &ArgMatches) -> bool {
