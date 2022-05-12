@@ -16,10 +16,10 @@ mod variable;
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Declaration<'a> {
+pub struct Declaration {
     function_name: String,
-    arguments: Vec<Variable<'a>>,
-    outputs: Vec<Variable<'a>>,
+    arguments: Vec<Variable>,
+    outputs: Vec<Variable>,
 }
 
 fn val(input: &str) -> Res<&str, &str> {

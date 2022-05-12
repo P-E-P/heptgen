@@ -1,11 +1,11 @@
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag, take_while},
-    character::complete::{char, digit0},
+    character::complete::{char, digit0, space0},
     character::is_alphanumeric,
     combinator::opt,
     error::{context, VerboseError},
-    sequence::{delimited, separated_pair},
+    sequence::{delimited, separated_pair, tuple},
     IResult,
 };
 
@@ -25,9 +25,15 @@ pub enum Type {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Variable<'a> {
-    kind: Type,
-    name: &'a str,
+pub struct Variable {
+    kind: MetaType,
+    name: String,
+}
+
+impl Variable {
+    pub fn new(name: String, kind: MetaType) -> Self {
+        Variable { kind, name }
+    }
 }
 
 impl From<&str> for Type {
@@ -50,6 +56,20 @@ impl From<(Type, &str)> for MetaType {
             size => MetaType::Vector(t, size),
         }
     }
+}
+
+impl From<(&str, &str, &str, &str, MetaType)> for Variable {
+    fn from((name, _, _, _, kind): (&str, &str, &str, &str, MetaType)) -> Self {
+        Variable::new(name.to_string(), kind)
+    }
+}
+
+fn variable(input: &str) -> Res<&str, Variable> {
+    context(
+        "variable",
+        tuple((variable_name, space0, tag(":"), space0, variable_type)),
+    )(input)
+    .map(|(next_input, res)| (next_input, res.into()))
 }
 
 fn variable_name(input: &str) -> Res<&str, &str> {
@@ -130,6 +150,28 @@ mod test {
         assert_eq!(
             variable_type("float^256 "),
             Ok((" ", MetaType::Vector(Type::Float, 256)))
+        );
+    }
+
+    #[test]
+    fn variable_test() {
+        assert_eq!(
+            variable("data:float^256"),
+            Ok((
+                "",
+                Variable::new("data".to_string(), MetaType::Vector(Type::Float, 256))
+            ))
+        );
+    }
+
+    #[test]
+    fn variable_space_test() {
+        assert_eq!(
+            variable("data : float^256"),
+            Ok((
+                "",
+                Variable::new("data".to_string(), MetaType::Vector(Type::Float, 256))
+            ))
         );
     }
 }
