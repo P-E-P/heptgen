@@ -33,10 +33,6 @@ impl Declaration {
     }
 }
 
-fn val(input: &str) -> Res<&str, Option<&str>> {
-    context("val", opt(tag("val")))(input).map(|(next_input, res)| (next_input, res.into()))
-}
-
 fn variable_separator(input: &str) -> Res<&str, &str> {
     context("variable separator", tuple((space0, tag(";"), space0)))(input)
         .map(|(next_input, (_, sep, _))| (next_input, sep))
@@ -50,12 +46,12 @@ fn variable_list(input: &str) -> Res<&str, Vec<Variable>> {
     .map(|(next_input, res)| (next_input, res.into()))
 }
 
-fn function_declaration(input: &str) -> Res<&str, Declaration> {
+pub fn function_declaration(input: &str) -> Res<&str, Declaration> {
     context(
         "function declaration",
         tuple((
-            val,
-            space1,
+            opt(tag("val ")),
+            space0,
             tag("fun"),
             space1,
             function_name,
@@ -103,11 +99,6 @@ mod test {
     };
 
     use super::variable::{MetaType, Type};
-
-    #[test]
-    fn val_test() {
-        assert_eq!(val("val"), Ok(("", Some("val"))));
-    }
 
     #[test]
     fn variable_list_test() {
