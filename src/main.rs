@@ -1,6 +1,6 @@
 use clap::{arg, command, ArgMatches};
 use parser::Declaration;
-use std::fs::{File, write};
+use std::fs::{write, File};
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
@@ -39,12 +39,15 @@ fn main() {
     let matches = command!()
         .arg(arg!([FILE]))
         .arg(arg!(-f - -force "Force file parsing"))
+        .arg(arg!(-o - -overwrite "Overwrite existing files"))
         .get_matches();
 
     let filepath = match matches.value_of("FILE") {
         Some(filename) => Path::new(filename),
         None => panic!("No file specified"),
     };
+
+    let overwrite = matches.is_present("overwrite");
 
     if !validate_file_extension(filepath, &matches) {
         panic!("Invalid file extension");
@@ -58,46 +61,44 @@ fn main() {
         .expect("Invalid file")
         .to_string_lossy();
 
-    let mut output_types: String = "".to_string();
+    let capitalized_unit_name = capitalize(&unit_name);
+    let uppercase_unit_name = unit_name.to_uppercase();
+
+    let mut output_types: String = String::new();
     let mut function_declarations = vec![];
 
     for dec in declarations {
         // Collect output types
-        let mut types = "".to_string();
+        let mut types = String::new();
         for var in dec.outputs {
             types.push_str(&String::from(var));
             types.push_str("; ");
         }
         output_types.push_str(&format!(
             "typedef struct {{ {} }} {}__{}_out;",
-            types,
-            capitalize(&unit_name),
-            dec.name
+            types, capitalized_unit_name, dec.name
         ));
-        output_types.push_str("\n");
+        output_types.push('\n');
 
         // Collect function declarations
-        let mut inputs = "".to_string();
+        let mut inputs = String::new();
         for var in dec.inputs {
             inputs.push_str(&String::from(var));
             inputs.push_str(", ");
         }
         function_declarations.push(format!(
             "void {}__{}_step({}{}__{}_out *_out)",
-            capitalize(&unit_name),
-            dec.name,
-            inputs,
-            capitalize(&unit_name),
-            dec.name
+            capitalized_unit_name, dec.name, inputs, capitalized_unit_name, dec.name
         ));
     }
 
+    // Substitute magic values in template strings
     let types_file = TYPE_TEMPLATE
         .replace("{type_definition}", &output_types)
-        .replace("{unit_name}", &unit_name.to_uppercase());
+        .replace("{unit_name}", &uppercase_unit_name);
 
     let header_file = HEADER_TEMPLATE
-        .replace("{unit_name}", &unit_name.to_uppercase())
+        .replace("{unit_name}", &uppercase_unit_name)
         .replace("{types_file}", &unit_name.to_lowercase())
         .replace(
             "{function_declarations}",
@@ -119,13 +120,36 @@ fn main() {
                 .join(""),
         );
 
-    write(format!("{}_types.h", &unit_name.to_lowercase()), types_file)
-        .expect("Unable to write type file");
-    write(format!("{}.h", &unit_name.to_lowercase()), header_file)
-        .expect("Unable to write header file");
-    write(format!("{}.c", &unit_name.to_lowercase()), c_file).expect("Unable to write c file");
+    let type_filename = format!("{}_types.h", &unit_name.to_lowercase());
+    let header_filename = format!("{}.h", &unit_name.to_lowercase());
+    let source_filename = format!("{}.c", &unit_name.to_lowercase());
+
+    let type_path = Path::new(&type_filename);
+    let header_path = Path::new(&header_filename);
+    let source_path = Path::new(&source_filename);
+
+    if !type_path.exists() || overwrite {
+        write(type_filename, types_file).expect("Unable to write type file");
+    } else {
+        eprintln!("Cannot overwrite existing type file");
+    }
+    if !header_path.exists() || overwrite {
+        write(header_filename, header_file).expect("Unable to write header file");
+    } else {
+        eprintln!("Cannot overwrite existing header file");
+    }
+    if !source_path.exists() || overwrite {
+        write(source_filename, c_file).expect("Unable to write c file");
+    } else {
+        eprintln!("Cannot overwrite existing source file");
+    }
 }
 
+/// Change the first character of a given string to uppercase.
+///
+/// # Arguments
+///
+/// * `s` - The string to capitalize
 fn capitalize(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
@@ -134,6 +158,13 @@ fn capitalize(s: &str) -> String {
     }
 }
 
+/// Parse the function declarations from a given file.
+/// Return a vector containing details from every function
+/// declaration parsed successfully.
+///
+/// # Arguments
+///
+/// * `file` - The file to parse.
 fn parse_declarations(file: File) -> Vec<Declaration> {
     let reader = BufReader::new(file);
     let mut result = vec![];
@@ -150,6 +181,15 @@ fn parse_declarations(file: File) -> Vec<Declaration> {
     result
 }
 
+/// Check whether the given path has the correct file
+/// extensions.
+/// Return true if any `force` argument is present in
+/// clap command line matches.
+///
+/// # Arguments
+///
+/// * `filename` - The file name to check.
+/// * `matches` - Clap argument matches.
 fn validate_file_extension(filename: &Path, matches: &ArgMatches) -> bool {
     filename
         .extension()
