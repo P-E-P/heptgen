@@ -19,7 +19,6 @@ fn main() {
     if !validate_file_extension(filepath, &matches) {
         panic!("Invalid file extension");
     }
-
 }
 
 fn validate_file_extension(filename: &Path, matches: &ArgMatches) -> bool {
