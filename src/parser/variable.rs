@@ -23,8 +23,27 @@ pub enum Type {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Variable {
-    kind: MetaType,
-    name: String,
+    pub kind: MetaType,
+    pub name: String,
+}
+
+impl From<Type> for String {
+    fn from(t: Type) -> Self {
+        match t {
+            Type::Integer => "int".to_string(),
+            Type::Float => "float".to_string(),
+            Type::Custom(s) => s,
+        }
+    }
+}
+
+impl From<Variable> for String {
+    fn from(var: Variable) -> Self {
+        match var.kind {
+            MetaType::Vector(t, size) => format!("{} {}[{}]", String::from(t), var.name, size),
+            MetaType::Primitive(t) => format!("{} {}", String::from(t), var.name),
+        }
+    }
 }
 
 impl Variable {

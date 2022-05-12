@@ -16,9 +16,9 @@ type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Declaration {
-    name: String,
-    inputs: Vec<Variable>,
-    outputs: Vec<Variable>,
+    pub name: String,
+    pub inputs: Vec<Variable>,
+    pub outputs: Vec<Variable>,
 }
 
 impl Declaration {
