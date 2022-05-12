@@ -58,18 +58,14 @@ impl From<(Type, &str)> for MetaType {
     }
 }
 
-impl From<(&str, &str, &str, &str, MetaType)> for Variable {
-    fn from((name, _, _, _, kind): (&str, &str, &str, &str, MetaType)) -> Self {
-        Variable::new(name.to_string(), kind)
-    }
-}
-
-fn variable(input: &str) -> Res<&str, Variable> {
+pub fn variable(input: &str) -> Res<&str, Variable> {
     context(
         "variable",
         tuple((variable_name, space0, tag(":"), space0, variable_type)),
     )(input)
-    .map(|(next_input, res)| (next_input, res.into()))
+    .map(|(next_input, (name, _, _sep, _, vartype))| {
+        (next_input, Variable::new(name.to_string(), vartype))
+    })
 }
 
 fn variable_name(input: &str) -> Res<&str, &str> {
