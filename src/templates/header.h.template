@@ -1,0 +1,8 @@
+#ifndef {unit_name}_H
+#define {unit_name}_H
+
+#include "{types_file}_types.h"
+
+{function_declarations}
+
+#endif /* ! {unit_name}_H */

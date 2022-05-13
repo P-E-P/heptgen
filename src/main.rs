@@ -6,32 +6,11 @@ use std::path::Path;
 
 mod parser;
 
-const TYPE_TEMPLATE: &str = r#"
-#ifndef {unit_name}_TYPES_H
-#define {unit_name}_TYPES_H
+const TYPE_TEMPLATE: &str = include_str!("templates/header_type.h.template");
 
-{type_definition}
+const HEADER_TEMPLATE: &str = include_str!("templates/header.h.template");
 
-#endif /* {unit_name}_TYPES_H */
-"#;
-
-const HEADER_TEMPLATE: &str = r#"
-#ifndef {unit_name}_H
-#define {unit_name}_H
-
-#include "{types_file}_types.h"
-
-{function_declarations}
-
-#endif /* ! {unit_name}_H */
-"#;
-
-const C_TEMPLATE: &str = r#"
-#include "{header_file}.h"
-
-{function_definitions}
-
-"#;
+const C_TEMPLATE: &str = include_str!("templates/source.c.template");
 
 const HEPTAGON_INTERFACE_EXTENSION: &str = "epi";
 

@@ -1,0 +1,3 @@
+#include "{header_file}.h"
+
+{function_definitions}

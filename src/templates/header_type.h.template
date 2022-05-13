@@ -1,0 +1,6 @@
+#ifndef {unit_name}_TYPES_H
+#define {unit_name}_TYPES_H
+
+{type_definition}
+
+#endif /* {unit_name}_TYPES_H */
