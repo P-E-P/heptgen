@@ -42,10 +42,7 @@ fn main() {
         .arg(arg!(-o - -overwrite "Overwrite existing files"))
         .get_matches();
 
-    let filepath = match matches.value_of("FILE") {
-        Some(filename) => Path::new(filename),
-        None => panic!("No file specified"),
-    };
+    let filepath = Path::new(matches.value_of("FILE").expect("No file specified"));
 
     let overwrite = matches.is_present("overwrite");
 
