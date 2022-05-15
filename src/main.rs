@@ -1,5 +1,5 @@
 use clap::{arg, command, ArgMatches};
-use parser::Declaration;
+use parser::function::Declaration;
 use std::fs::{write, File};
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -147,7 +147,7 @@ fn parse_declarations(file: File) -> Vec<Declaration> {
     for line in reader.lines() {
         let line = line.expect("Cannot read line");
         if line.len() > 1 {
-            match parser::function_declaration(&line) {
+            match parser::function::function_declaration(&line) {
                 Ok((_, dec)) => result.push(dec),
                 Err(why) => eprintln!("Error while parsing line\n{}\n Error is: {:?}", &line, why),
             }
